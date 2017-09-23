@@ -1,0 +1,1 @@
+from kivyplayer import Player
