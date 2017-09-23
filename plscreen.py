@@ -91,12 +91,15 @@ class PlaylistScreen(ScrollView):
          self.playlistgrid.bind(minimum_height=self.playlistgrid.setter('height'))
          
          self.bt_add_playlist = PlaylistButton('Add Playlists',
-                                               'Add playlists manualy',[])
+                                               'Add playlists manualy',
+                                               [],
+                                               scriptfolder+'/images/playlist_add.png')
          self.bt_add_playlist.callback = self.add_playlist
          
          self.bt_add_playlistYT = PlaylistButton('Add YT Playlists',
-                                                 'Add playlists automatically from YouTube',[])
-         self.bt_add_playlistYT.callback = self.add_playlistYT
+                                                 'Add playlists automatically from YouTube',
+                                                 [],
+                                                 scriptfolder+'/images/playlistYT_add.png')
          
          self.popup_addplaylist = AddPlaylistPopup(self)
          self.popup_addplaylistYT = AddPlaylistFromYTPopup(self)
