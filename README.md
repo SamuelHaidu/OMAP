@@ -12,3 +12,11 @@ OMAP is a simple music search and downloader for android. Made in kivy have a go
 
   - First Version
 
+### Requirements
+  - Python 2.7.x
+  - Kivy 1.9.1 
+  - Requests
+  - BeautifulSoup4
+  - Pafy
+  - youtube-dl
+  - pyjnius
