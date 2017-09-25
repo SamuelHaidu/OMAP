@@ -1,6 +1,6 @@
-# OMAP - Open Music App
+# OMAP - Open Music App Project
 ##### Current Version 0.1.0
-OMAP is a simple music search and downloader for android. Made in kivy have a good UI.
+OMAP is a simple music search and downloader and streaming for android. All code can be run in other plataforms with few modifications.
 
 ##### Shold improve
   - UI
@@ -10,7 +10,9 @@ OMAP is a simple music search and downloader for android. Made in kivy have a go
 
 ##### New Features!
 
-  - First Version
+  - Add m4a Download
+  - Improve UI
+  - Redesign icons
 
 ### Requirements
   - Python 2.7.x
@@ -20,6 +22,7 @@ OMAP is a simple music search and downloader for android. Made in kivy have a go
   - Pafy
   - youtube-dl
   - pyjnius
+#
 ### Screnshots
 ![N|Solid](https://1.bp.blogspot.com/-3Ru6gRjhCfk/Wcg1Nekp5SI/AAAAAAAAA9A/uZtL836o4_kc-3e4MeUDlMjZDbagi0qYgCK4BGAYYCw/s320/Screenshot_2017-09-24-19-39-06.png)
 ![N|Solid](https://1.bp.blogspot.com/-wGnBgNn0H6w/Wcg1M6rzyLI/AAAAAAAAA80/h-KJFYnaAu0v5Svx5YqYG4qvvIo_RyBhwCK4BGAYYCw/s320/Screenshot_2017-09-24-19-34-22.png)
