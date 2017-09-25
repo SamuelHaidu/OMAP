@@ -100,6 +100,8 @@ class PlaylistScreen(ScrollView):
                                                  'Add playlists automatically from YouTube',
                                                  [],
                                                  scriptfolder+'/images/playlistYT_add.png')
+                                                 
+         self.bt_add_playlistYT.callback = self.add_playlistYT
          
          self.popup_addplaylist = AddPlaylistPopup(self)
          self.popup_addplaylistYT = AddPlaylistFromYTPopup(self)
@@ -117,7 +119,9 @@ class PlaylistScreen(ScrollView):
          for i in range(len(self.playlists)):
              self.file_data = open(self.playlists[i])# Open File
              try:self.data = json.load(self.file_data)# Get Json Data
-             except: Logger.exception('Cant load ', self.playlists[i])
+             except: 
+                 Logger.exception('Cant load ', self.playlists[i])
+                 continue
              
              if self.data['type']=='local': 
                  self.playlist = PlaylistButton(self.data['title'],#Insert in Button
