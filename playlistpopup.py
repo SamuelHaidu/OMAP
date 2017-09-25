@@ -6,6 +6,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.image import Image
+from kivy.metrics import dp
 from shutil import copy2
 from os.path import abspath, dirname
 import os
@@ -57,8 +58,14 @@ class AddPlaylistPopup(Popup):
     title = 'Add Playlist'
     def __init__(self, playlistscreen,**kwargs):
         super(AddPlaylistPopup, self).__init__(**kwargs)
-        self.popupcontent = BoxLayout(orientation='vertical')
-        self.btlayout = BoxLayout(orientarion='horizontal')
+        self.size_hint_y = None
+        self.height = dp(350)
+        self.mainlayout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(300))
+        self.img_title_decri_layout = BoxLayout(orientarion='horizontal', size_hint_y=None)
+        self.img_title_decri_layout.height = dp(120)
+        self.title_descri_layout = BoxLayout(orientation='vertical')
+        self.bt_add_save_layout = BoxLayout(orientarion='horizontal', size_hint_y=None)
+        self.bt_add_save_layout.height = dp(46)
         
         self.thumbname = '' 
         self.playlist_data = {
@@ -69,38 +76,52 @@ class AddPlaylistPopup(Popup):
         "tracks":[]
         }
         self.playlistscreen = playlistscreen
-        self.txtbx_playlisttitle = TextInput(text='Playlist Title')
-        self.popupcontent.add_widget(self.txtbx_playlisttitle)
+        
+        # Thumbnail
+        self.bt_thumb = ThumbButton()
+        self.bt_thumb.size_hint = (0.46,1)
+        self.bt_thumb.bind(on_press=self.bt_thumb_click)
+        self.img_title_decri_layout.add_widget(self.bt_thumb)
+        self.mainlayout.add_widget(self.img_title_decri_layout)
+        # Title And Description
+        self.txtbx_playlisttitle = TextInput(text='Playlist Title', size_hint_y=None)
+        self.txtbx_playlisttitle.height = dp(32)
+        self.title_descri_layout.add_widget(self.txtbx_playlisttitle)
         
         self.txtbx_description = TextInput(text='Playlist description')
-        self.popupcontent.add_widget(self.txtbx_description)
+        self.title_descri_layout.add_widget(self.txtbx_description)
+        self.img_title_decri_layout.add_widget(self.title_descri_layout)
         
-        self.txtbx_musictitle = TextInput(text='Music Title')
-        self.popupcontent.add_widget(self.txtbx_musictitle)
         
-        self.txtbx_musiclink = TextInput(text='YouTube Video Link/ID')
-        self.popupcontent.add_widget(self.txtbx_musiclink)
+        #Music Title and Music Link
+        self.txtbx_musictitle = TextInput(text='Music Title', size_hint_y=None)
+        self.txtbx_musictitle.height = dp(32)
+        self.mainlayout.add_widget(self.txtbx_musictitle)
+        
+        self.txtbx_musiclink = TextInput(text='YouTube Video Link/ID', size_hint_y=None)
+        self.txtbx_musiclink.height = dp(32)
+        self.mainlayout.add_widget(self.txtbx_musiclink)
          
-        self.bt_addmusic = Button(text='Add Music')
+        self.bt_addmusic = Button(text='Add Music', size_hint_y=None)
+        self.bt_addmusic.height = dp(46)
         self.bt_addmusic.bind(on_press=self.bt_addmusic_click)
-        self.btlayout.add_widget(self.bt_addmusic)
+        self.bt_add_save_layout.add_widget(self.bt_addmusic)
          
-        self.bt_save = Button(text='Save')
+        self.bt_save = Button(text='Save', size_hint_y=None)
+        self.bt_save.height = dp(46)
         self.bt_save.bind(on_press=self.bt_save_click)
-        self.btlayout.add_widget(self.bt_save)
-         
-        self.bt_thumb = ThumbButton()
-        self.bt_thumb.bind(on_press=self.bt_thumb_click)
-        self.btlayout.add_widget(self.bt_thumb)
-        self.popupcontent.add_widget(self.btlayout)
-         
-        self.bt_close = Button(text='Close')
-        self.bt_close.bind(on_press=self.dismiss)
-        self.popupcontent.add_widget(self.bt_close)         
+        self.bt_add_save_layout.add_widget(self.bt_save)
+        self.mainlayout.add_widget(self.bt_add_save_layout)
+        
+        self.bt_close = Button(text='Close', size_hint_y=None)
+        self.bt_close.height = dp(46)
+        self.bt_close.bind(on_press=self.dismiss) 
+        self.mainlayout.add_widget(self.bt_close)
         
         self.filepop = FilePopup()
         self.filepop.bind(on_dismiss=self.load_image)
-        self.content = self.popupcontent
+        
+        self.content = self.mainlayout
     
     def bt_addmusic_click(self, instance):
         self.musictitle = self.txtbx_musictitle.text
@@ -137,9 +158,16 @@ class AddPlaylistFromYTPopup(Popup):
     title = 'Add Playlist from Youtube'
     def __init__(self, playlistscreen,**kwargs):
         super(AddPlaylistFromYTPopup, self).__init__(**kwargs)
-        self.popupcontent = BoxLayout(orientation='vertical')
-        self.btlayout = BoxLayout(orientarion='horizontal')
+        self.size_hint_y = None
+        self.height = dp(260)
+        self.mainlayout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(350))
+        self.img_title_decri_layout = BoxLayout(orientarion='horizontal', size_hint_y=None)
+        self.img_title_decri_layout.height = dp(120)
+        self.title_descri_layout = BoxLayout(orientation='vertical')
+        self.bt_close_save_layout = BoxLayout(orientarion='horizontal', size_hint_y=None)
+        self.bt_close_save_layout.height = dp(46)
         
+        self.playlistscreen = playlistscreen
         self.thumbname = '' 
         self.playlist_data = {
         "title":"",
@@ -148,32 +176,42 @@ class AddPlaylistFromYTPopup(Popup):
         "thumb": "",
         "link":''
         }
-        self.playlistscreen = playlistscreen
-        self.txtbx_playlisttitle = TextInput(text='Playlist Title')
-        self.popupcontent.add_widget(self.txtbx_playlisttitle)
-        
-        self.txtbx_description = TextInput(text='Playlist description')
-        self.popupcontent.add_widget(self.txtbx_description)
-        
-        self.txtbx_playlistlink = TextInput(text='YouTube Playlist Link')
-        self.popupcontent.add_widget(self.txtbx_playlistlink)
-         
-        self.bt_save = Button(text='Save')
-        self.bt_save.bind(on_press=self.bt_save_click)
-        self.btlayout.add_widget(self.bt_save)
-         
+       
         self.bt_thumb = ThumbButton()
         self.bt_thumb.bind(on_press=self.bt_thumb_click)
-        self.btlayout.add_widget(self.bt_thumb)
-        self.popupcontent.add_widget(self.btlayout)
-         
-        self.bt_close = Button(text='Close')
+        self.img_title_decri_layout.add_widget(self.bt_thumb)
+        
+        
+        self.txtbx_playlisttitle = TextInput(text='Playlist Title',multiline=False)
+        self.txtbx_playlisttitle.size_hint_y = None
+        self.txtbx_playlisttitle.height = dp(32)
+        self.title_descri_layout.add_widget(self.txtbx_playlisttitle)
+        
+        self.txtbx_description = TextInput(text='Playlist description',multiline=False)
+        self.title_descri_layout.add_widget(self.txtbx_description)
+        self.img_title_decri_layout.add_widget(self.title_descri_layout)
+        self.mainlayout.add_widget(self.img_title_decri_layout)
+        
+        self.txtbx_playlistlink = TextInput(text='YouTube Playlist Link/ID', multiline=False)
+        self.txtbx_playlistlink.size_hint_y = None
+        self.txtbx_playlistlink.height = dp(32)
+        self.mainlayout.add_widget(self.txtbx_playlistlink)
+        
+        self.bt_save = Button(text='Save', size_hint_y=None)
+        self.bt_save.bind(on_press=self.bt_save_click)
+        self.bt_save.height = dp(46)
+        self.bt_close_save_layout.add_widget(self.bt_save)
+        
+        self.bt_close = Button(text='Close', size_hint_y=None)
         self.bt_close.bind(on_press=self.dismiss)
-        self.popupcontent.add_widget(self.bt_close)         
+        self.bt_close.height = dp(46)
+        self.bt_close_save_layout.add_widget(self.bt_close)
+        
+        self.mainlayout.add_widget(self.bt_close_save_layout)
+        self.content = self.mainlayout
         
         self.filepop = FilePopup()
         self.filepop.bind(on_dismiss=self.load_image)
-        self.content = self.popupcontent
     
     def bt_save_click(self,instance):
         self.playlist_data['title'] = self.txtbx_playlisttitle.text
