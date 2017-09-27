@@ -1,7 +1,9 @@
 # OMAP - Open Music App Project
 ##### Current Version 0.1.0
 OMAP is a simple music search and downloader and streaming for android. All code can be run in other plataforms with few modifications.
-
+##### Downloads:
+  - [Android APK](http://openmusicapp.blogspot.com.br/p/download.html)
+  
 ##### Shold improve
   - UI
   - Search Options
