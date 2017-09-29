@@ -20,6 +20,7 @@ OMAP is a simple music search and downloader and streaming for android. All code
   - Pafy
   - youtube-dl
   - pyjnius
+  - mechanize (and html5lib, webencodings)
 #
 ### Screnshots
 ![N|Solid](https://1.bp.blogspot.com/-3Ru6gRjhCfk/Wcg1Nekp5SI/AAAAAAAAA9A/uZtL836o4_kc-3e4MeUDlMjZDbagi0qYgCK4BGAYYCw/s320/Screenshot_2017-09-24-19-39-06.png)
