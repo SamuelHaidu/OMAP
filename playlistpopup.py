@@ -1,18 +1,27 @@
-from kivy.uix.button import Button
+import os
+from os.path import abspath, dirname
+scriptfolder = dirname(abspath(__file__))
+os.chdir(scriptfolder)
+sdcard = '/mnt/sdcard/'
+import json
+import __main__
 from kivy.app import App
+from kivy.graphics import Color, Rectangle, Line
+from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.image import Image
 from kivy.metrics import dp
 from shutil import copy2
-from os.path import abspath, dirname
-import os
-import json
-scriptfolder = dirname(abspath(__file__))
-sdcard = '/mnt/sdcard/'
+from glob import glob
+
+
 class ThumbButton(ButtonBehavior, Image):
     def __init__(self, **kwargs):
         super(ThumbButton, self).__init__(**kwargs)
@@ -26,6 +35,7 @@ class ThumbButton(ButtonBehavior, Image):
         pass
     def set_img(self, img):
         self.source = img
+
 class FilePopup(Popup):
     def __init__(self, **kwargs):
         super(FilePopup, self).__init__(**kwargs)
@@ -33,7 +43,7 @@ class FilePopup(Popup):
         self.layout = BoxLayout(orientation='vertical')
         self.btlayout = BoxLayout(orientation='horizontal', size_hint=(1,0.15))
         
-        self.FChooser = FileChooserListView(path='/mnt/sdcard/')
+        self.FChooser = FileChooserListView(path=sdcard+'/OMAP')
         self.layout.add_widget(self.FChooser)
         
         self.bt_load = Button(text='Load')
@@ -135,12 +145,12 @@ class AddPlaylistPopup(Popup):
         self.playlist_data['description'] = self.txtbx_description.text
         try: 
             copy2(self.filepop.selection, 
-                  sdcard+'OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
+                  sdcard+'/OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
         except: pass
         self.playlist_data['thumb'] = self.playlist_data['title'].replace(' ', '_')+'.png'
         self.jsondata = json.dumps(self.playlist_data, sort_keys=True, indent=4, separators=(',', ': '))
         self.fname = self.playlist_data['title'].replace(' ', '_') + '.json'
-        self.playlistfile = open(sdcard+'OMAP/Playlists/'+self.fname, 'w')
+        self.playlistfile = open(sdcard+'/OMAP/Playlists/'+self.fname, 'w')
         self.playlistfile.write(self.jsondata)
         self.playlistfile.close()
         self.dismiss()
@@ -154,6 +164,7 @@ class AddPlaylistPopup(Popup):
            return
         else:
            self.bt_thumb.set_img(self.filepop.selection)
+
 class AddPlaylistFromYTPopup(Popup):
     title = 'Add Playlist from Youtube'
     def __init__(self, playlistscreen,**kwargs):
@@ -218,7 +229,7 @@ class AddPlaylistFromYTPopup(Popup):
         self.playlist_data['description'] = self.txtbx_description.text
         try: 
             copy2(self.filepop.selection, 
-                  sdcard+'OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
+                  sdcard+'/OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
         except: pass
         self.playlist_data['thumb'] = self.playlist_data['title'].replace(' ','_')+'.png'
         self.playlist_data['link'] = self.txtbx_playlistlink.text
@@ -226,7 +237,7 @@ class AddPlaylistFromYTPopup(Popup):
         self.jsondata = json.dumps(self.playlist_data, sort_keys=True, 
                                    indent=4, 
                                    separators=(',', ': '))
-        self.playlistfile = open(sdcard+'OMAP/Playlists/'+self.fname, 'w')
+        self.playlistfile = open(sdcard+'/OMAP/Playlists/'+self.fname, 'w')
         self.playlistfile.write(self.jsondata)
         self.playlistfile.close()
                                    
@@ -247,12 +258,96 @@ class AddPlaylistFromYTPopup(Popup):
            return
         else:
            self.bt_thumb.set_img(self.filepop.selection)
-           
+
+class PlButtonWidget(ButtonBehavior, BoxLayout):
+    def __init__(self, musictitle, musicurl, pltitle, file_location, popup, **kwargs):
+        super(PlButtonWidget, self).__init__(**kwargs)
+        self.musictitle = musictitle
+        self.musicurl = musicurl
+        self.pltitle = pltitle
+        self.flocation = file_location
+        self.popup = popup
+        
+        self.size_hint_y = None
+        self.height = dp(46)
+        # Create a label title
+        self.label_title = Label(text=self.pltitle, valing='midle')
+        self.add_widget(self.label_title)
+        
+        with self.canvas.before:
+            Color(0.2,0.2,0.2,1)
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+        self.bind(size=self._update_rect, pos=self._update_rect)
+        
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+            
+    def on_press(self):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            color = Color(0.8, 0.8, 0.8, 1, mode='rgba')
+            self.rect = Rectangle(pos=self.pos, size=self.size, color=color)
+        
+    def on_release(self):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(0.2, 0.2, 0.2, 1, mode='rgba')
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.data = json.load(open(self.flocation ,'r'))
+        self.track = {'title': self.musictitle, 'link': self.musicurl}
+        self.data['tracks'].append(self.track)
+        self.jsondata = json.dumps(self.data, 
+                                   sort_keys=True,
+                                   indent=4, 
+                                   separators=(',', ': '))
+        open(self.flocation, 'w').close()
+        open(self.flocation, 'w').write(self.jsondata)
+        __main__.app.main.PlaylistScreen.update_playlists()
+        self.popup.dismiss()
+        
+class addTrackPopup(Popup):
+    title='Add to'
+    def __init__(self, videowidget, **kwargs):
+        super(addTrackPopup, self).__init__(**kwargs)
+        
+        self.url = videowidget.url
+        self.title = videowidget.title
+        
+        self.size_hint_y = None
+        self.height = dp(260)
+        
+        self.playlistgrid = GridLayout(cols=1, spacing=1, size_hint=(1,None)) 
+        self.playlistgrid.bind(minimum_height=self.playlistgrid.setter('height'))
+        
+        self.scroll = ScrollView()
+
+        self.scroll.size_hint= (1, 1)
+        self.scroll.add_widget(self.playlistgrid)
+        
+        self.content = self.scroll
+        os.chdir(sdcard+'/OMAP/Playlists/')
+        self.playlistfiles = glob('*.json')
+        
+        for pfile in self.playlistfiles:
+            pfile = open(pfile, 'r')
+            self.data = json.load(pfile)
+            if self.data['type']=='local':
+                self.pbutton = PlButtonWidget(self.title, 
+                                              self.url, 
+                                              self.data['title'], 
+                                              sdcard+'/OMAP/Playlists/'+pfile.name, 
+                                              self)
+                self.playlistgrid.add_widget(self.pbutton)
+        os.chdir(sdcard)
+        
 class TestApp(App):
+    title = 'Title of playlist'
+    url = 'http://link'
     def build(self):
         self.bt = Button(text='popup')
         self.bt.bind(on_press=self.on_press)
-        self.pop = AddPlaylistFromYTPopup(self)
+        self.pop = addTrackPopup(self)
         return self.bt
     
     def on_press(self, instance):

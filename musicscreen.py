@@ -1,11 +1,12 @@
 import pyms
 import pafy
+from playlistpopup import addTrackPopup
 from downloader import Downloader
 from kivyplayer import Player
 from os import getcwd
 from os.path import abspath, dirname
 from kivy.app import App
-from kivy.metrics import dp , mm
+from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle, Line
 from kivy.properties import StringProperty
@@ -88,6 +89,18 @@ class VideoWidget(ButtonBehavior, BoxLayout):
         self.bt_donwload_ogg.bind(on_release=self.bt_download_ogg)
         self.drop_op.add_widget(self.bt_donwload_ogg)
 
+        self.bt_donwload_mp3 = Button(text='', size_hint=(1,None), size=(50,dp(32)))
+        self.bt_donwload_mp3.background_normal = scriptfolder + '/images/dl_mp3.png'
+        self.bt_donwload_mp3.border=(0, 0, 0, 0)
+        self.bt_donwload_mp3.bind(on_release=self.bt_download_mp3_click)
+        self.drop_op.add_widget(self.bt_donwload_mp3)
+        
+        self.bt_addtoplaylist = Button(text='', size_hint=(1,None), size=(50,dp(32)))
+        self.bt_addtoplaylist.border=(0, 0, 0, 0)
+        self.bt_addtoplaylist.background_normal = scriptfolder + '/images/bt_addto.png'
+        self.bt_addtoplaylist.bind(on_release=self.bt_addtoplaylist_click)
+        self.drop_op.add_widget(self.bt_addtoplaylist)
+        
         self.bt_op = Button(text='', size_hint=(None,1),width=dp(32))
         self.bt_op.background_normal = scriptfolder + '/images/bt_op.png'
         self.bt_op.border=(0, 0, 0, 0)
@@ -120,6 +133,12 @@ class VideoWidget(ButtonBehavior, BoxLayout):
     
     def bt_download_ogg(self, instance):
          if self.download_callback: self.download_callback(self.title, self.url, 'ogg')
+    
+    def bt_download_mp3_click(self, instance):
+         if self.download_callback: self.download_callback(self.title, self.url, 'mp3')
+    
+    def bt_addtoplaylist_click(self, instance):
+         addTrackPopup(self).open()
 
 class MusicScreen(BoxLayout):
     def __init__(self, **kwargs):
@@ -236,3 +255,4 @@ class MusicScreen(BoxLayout):
         self.pl.load(self.mediaurl + ext, self.videos[self.plidx]['title'])
         self.pl.play()
         print 'playing now music', self.plidx, self.videos[self.plidx]['title']
+ 
