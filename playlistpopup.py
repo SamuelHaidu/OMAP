@@ -2,7 +2,6 @@ import os
 from os.path import abspath, dirname
 scriptfolder = dirname(abspath(__file__))
 os.chdir(scriptfolder)
-sdcard = '/mnt/sdcard/'
 import json
 import __main__
 from kivy.app import App
@@ -21,6 +20,20 @@ from kivy.metrics import dp
 from shutil import copy2
 from glob import glob
 
+PLAYLISTS_PATH = __main__.PLAYLIST_PATH
+FCHOOSER_DEFALT = '/storage/sdcard0'
+
+class ErrorPopup(Popup):
+    
+    def __init__(self, text,**kwargs):
+        super(ErrorPopup, self).__init__(**kwargs)
+        self.size_hint=(0.7,0.3)
+        if not self.title == 'INFO': self.title = "ERROR"; self.size_hint=(1,0.5)
+        self.label_error = Label(text=text, valign='top', multiline=True, size_hint=(1,1))
+        self.label_error.bind(size=self.label_error.setter('text_size'))
+        self.label_error.halign = 'left'
+        self.content = self.label_error
+        
 
 class ThumbButton(ButtonBehavior, Image):
     def __init__(self, **kwargs):
@@ -33,9 +46,39 @@ class ThumbButton(ButtonBehavior, Image):
 
     def on_release(self):
         pass
+    
     def set_img(self, img):
         self.source = img
 
+class FolderPopup(Popup):
+    def __init__(self, **kwargs):
+        super(FolderPopup, self).__init__(**kwargs)
+        self.title = 'Select a Folder'
+        self.layout = BoxLayout(orientation='vertical')
+        self.btlayout = BoxLayout(orientation='horizontal', size_hint=(1,0.15))
+        
+        self.FChooser = FileChooserListView(path=FCHOOSER_DEFALT)
+        self.layout.add_widget(self.FChooser)
+        
+        self.bt_load = Button(text='Select')
+        self.bt_load.bind(on_press=self.bt_load_click)
+        self.btlayout.add_widget(self.bt_load)
+        
+        self.bt_calcel = Button(text='Calcel')
+        self.bt_calcel.bind(on_press=self.bt_calcel_click)
+        self.btlayout.add_widget(self.bt_calcel)
+        self.layout.add_widget(self.btlayout)
+        self.content = self.layout
+        self.selection = ''
+    
+    def bt_load_click(self, instance):
+        print self.FChooser.path
+        self.selection = self.FChooser.path
+        self.dismiss()
+    def bt_calcel_click(self, instance):
+        self.selection = ''
+        self.dismiss()
+        
 class FilePopup(Popup):
     def __init__(self, **kwargs):
         super(FilePopup, self).__init__(**kwargs)
@@ -43,10 +86,10 @@ class FilePopup(Popup):
         self.layout = BoxLayout(orientation='vertical')
         self.btlayout = BoxLayout(orientation='horizontal', size_hint=(1,0.15))
         
-        self.FChooser = FileChooserListView(path=sdcard+'/OMAP')
+        self.FChooser = FileChooserListView(path=FCHOOSER_DEFALT)
         self.layout.add_widget(self.FChooser)
         
-        self.bt_load = Button(text='Load')
+        self.bt_load = Button(text='Open')
         self.bt_load.bind(on_press=self.bt_load_click)
         self.btlayout.add_widget(self.bt_load)
         
@@ -66,7 +109,7 @@ class FilePopup(Popup):
                 
 class AddPlaylistPopup(Popup):
     title = 'Add Playlist'
-    def __init__(self, playlistscreen,**kwargs):
+    def __init__(self, **kwargs):
         super(AddPlaylistPopup, self).__init__(**kwargs)
         self.size_hint_y = None
         self.height = dp(350)
@@ -85,7 +128,7 @@ class AddPlaylistPopup(Popup):
         "thumb": "",
         "tracks":[]
         }
-        self.playlistscreen = playlistscreen
+        
         
         # Thumbnail
         self.bt_thumb = ThumbButton()
@@ -145,17 +188,17 @@ class AddPlaylistPopup(Popup):
         self.playlist_data['description'] = self.txtbx_description.text
         try: 
             copy2(self.filepop.selection, 
-                  sdcard+'/OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
+                  PLAYLISTS_PATH+self.playlist_data['title'].replace(' ','_')+'.png')
         except: pass
         self.playlist_data['thumb'] = self.playlist_data['title'].replace(' ', '_')+'.png'
         self.jsondata = json.dumps(self.playlist_data, sort_keys=True, indent=4, separators=(',', ': '))
         self.fname = self.playlist_data['title'].replace(' ', '_') + '.json'
-        self.playlistfile = open(sdcard+'/OMAP/Playlists/'+self.fname, 'w')
+        self.playlistfile = open(PLAYLISTS_PATH+self.fname, 'w')
         self.playlistfile.write(self.jsondata)
         self.playlistfile.close()
         self.dismiss()
-        self.playlistscreen.update_playlists()
         self.playlist_data['tracks'] = []
+        
     def bt_thumb_click(self, instance):
         self.filepop.open()
         
@@ -167,7 +210,7 @@ class AddPlaylistPopup(Popup):
 
 class AddPlaylistFromYTPopup(Popup):
     title = 'Add Playlist from Youtube'
-    def __init__(self, playlistscreen,**kwargs):
+    def __init__(self, **kwargs):
         super(AddPlaylistFromYTPopup, self).__init__(**kwargs)
         self.size_hint_y = None
         self.height = dp(260)
@@ -178,7 +221,6 @@ class AddPlaylistFromYTPopup(Popup):
         self.bt_close_save_layout = BoxLayout(orientarion='horizontal', size_hint_y=None)
         self.bt_close_save_layout.height = dp(46)
         
-        self.playlistscreen = playlistscreen
         self.thumbname = '' 
         self.playlist_data = {
         "title":"",
@@ -229,7 +271,7 @@ class AddPlaylistFromYTPopup(Popup):
         self.playlist_data['description'] = self.txtbx_description.text
         try: 
             copy2(self.filepop.selection, 
-                  sdcard+'/OMAP/Playlists/'+self.playlist_data['title'].replace(' ','_')+'.png')
+                  PLAYLISTS_PATH+self.playlist_data['title'].replace(' ','_')+'.png')
         except: pass
         self.playlist_data['thumb'] = self.playlist_data['title'].replace(' ','_')+'.png'
         self.playlist_data['link'] = self.txtbx_playlistlink.text
@@ -237,7 +279,7 @@ class AddPlaylistFromYTPopup(Popup):
         self.jsondata = json.dumps(self.playlist_data, sort_keys=True, 
                                    indent=4, 
                                    separators=(',', ': '))
-        self.playlistfile = open(sdcard+'/OMAP/Playlists/'+self.fname, 'w')
+        self.playlistfile = open(PLAYLISTS_PATH+self.fname, 'w')
         self.playlistfile.write(self.jsondata)
         self.playlistfile.close()
                                    
@@ -303,7 +345,7 @@ class PlButtonWidget(ButtonBehavior, BoxLayout):
                                    separators=(',', ': '))
         open(self.flocation, 'w').close()
         open(self.flocation, 'w').write(self.jsondata)
-        __main__.app.main.PlaylistScreen.update_playlists()
+        __main__.app.main.pl.PlaylistScreen.update_playlists()
         self.popup.dismiss()
         
 class addTrackPopup(Popup):
@@ -326,7 +368,7 @@ class addTrackPopup(Popup):
         self.scroll.add_widget(self.playlistgrid)
         
         self.content = self.scroll
-        os.chdir(sdcard+'/OMAP/Playlists/')
+        os.chdir(PLAYLISTS_PATH)
         self.playlistfiles = glob('*.json')
         
         for pfile in self.playlistfiles:
@@ -336,22 +378,7 @@ class addTrackPopup(Popup):
                 self.pbutton = PlButtonWidget(self.title, 
                                               self.url, 
                                               self.data['title'], 
-                                              sdcard+'/OMAP/Playlists/'+pfile.name, 
+                                              PLAYLISTS_PATH+pfile.name, 
                                               self)
                 self.playlistgrid.add_widget(self.pbutton)
-        os.chdir(sdcard)
         
-class TestApp(App):
-    title = 'Title of playlist'
-    url = 'http://link'
-    def build(self):
-        self.bt = Button(text='popup')
-        self.bt.bind(on_press=self.on_press)
-        self.pop = addTrackPopup(self)
-        return self.bt
-    
-    def on_press(self, instance):
-        self.pop.open()
-
-if __name__ == "__main__":
-    TestApp().run()

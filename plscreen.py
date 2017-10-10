@@ -3,8 +3,8 @@ import json
 import pafy
 import os
 import os.path
+import __main__
 from kivy.logger import Logger
-from kivy.graphics import Color, Rectangle
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -19,7 +19,9 @@ from os.path import abspath, dirname
 from kivy.metrics import dp
 from playlistpopup import AddPlaylistPopup, AddPlaylistFromYTPopup
 scriptfolder = dirname(abspath(__file__))
-sdcard = '/mnt/sdcard/'
+
+PLAYLISTS_PATH = __main__.PLAYLIST_PATH
+
 class ThumbButton(ButtonBehavior, Image):
     
     def __init__(self, **kwargs):
@@ -76,87 +78,80 @@ class PlaylistButton(BoxLayout):
         if self.callback: self.callback(self.videolist)
 
 class PlaylistScreen(ScrollView):
-     call = None
-     
-     def __init__(self, **kwargs):
-         super(PlaylistScreen, self).__init__(**kwargs)
-         self.size_hint=(1, 1)
-         with self.canvas.before:
-             Color(0.2, 0.2, 0.2, 1)
-             self.rect = Rectangle(size=self.size,
-                                   pos=self.pos)
-         self.bind(pos=self.update_rect, size=self.update_rect)
-         
-         self.playlistgrid = GridLayout(cols=1, spacing=5, size_hint_y=None)
-         self.playlistgrid.bind(minimum_height=self.playlistgrid.setter('height'))
-         
-         self.bt_add_playlist = PlaylistButton('Add Playlists',
-                                               'Add playlists manualy',
-                                               [],
-                                               scriptfolder+'/images/playlist_add.png')
-         self.bt_add_playlist.callback = self.add_playlist
-         
-         self.bt_add_playlistYT = PlaylistButton('Add YT Playlists',
-                                                 'Add playlists automatically from YouTube',
-                                                 [],
-                                                 scriptfolder+'/images/playlistYT_add.png')
-                                                 
-         self.bt_add_playlistYT.callback = self.add_playlistYT
-         
-         self.popup_addplaylist = AddPlaylistPopup(self)
-         self.popup_addplaylistYT = AddPlaylistFromYTPopup(self)
-         
-         self.update_playlists()
-         self.add_widget(self.playlistgrid)
-         
-     def update_playlists(self):
-         self.playlistgrid.clear_widgets(children=None)
-         self.playlistgrid.add_widget(self.bt_add_playlist)
-         self.playlistgrid.add_widget(self.bt_add_playlistYT)
-         os.chdir(sdcard+'OMAP/Playlists')
-         self.playlists = glob.glob('*.json')
-         
-         for i in range(len(self.playlists)):
-             self.file_data = open(self.playlists[i])# Open File
-             try:self.data = json.load(self.file_data)# Get Json Data
-             except: 
-                 Logger.exception('Cant load ', self.playlists[i])
-                 continue
-             
-             if self.data['type']=='local': 
-                 self.playlist = PlaylistButton(self.data['title'],#Insert in Button
-                                               self.data['description'],
-                                               self.data['tracks'])
-                 if os.path.isfile(self.data['thumb']): 
-                     self.playlist.set_thumb(self.data['thumb'])
+    call = None
+    def __init__(self, **kwargs):
+        super(PlaylistScreen, self).__init__(**kwargs)
+        self.size_hint=(1, 1)
+        
+        self.playlistgrid = GridLayout(cols=1, spacing=5, size_hint_y=None)
+        self.playlistgrid.bind(minimum_height=self.playlistgrid.setter('height'))
+        
+        self.bt_add_playlist = PlaylistButton('Add Playlists',
+                                              'Add playlists manualy',
+                                              [],
+                                              scriptfolder+'/images/playlist_add.png')
+        self.bt_add_playlist.callback = self.add_playlist
+        
+        self.bt_add_playlistYT = PlaylistButton('Add YT Playlists',
+                                                'Add playlists automatically from YouTube',
+                                                [],
+                                                scriptfolder+'/images/playlistYT_add.png')
+                                                
+        self.bt_add_playlistYT.callback = self.add_playlistYT
+        self.update_playlists()
+        self.add_widget(self.playlistgrid)
+        
+    def update_playlists(self):
+        self.playlistgrid.clear_widgets(children=None)
+        self.playlistgrid.add_widget(self.bt_add_playlist)
+        self.playlistgrid.add_widget(self.bt_add_playlistYT)
+        os.chdir(PLAYLISTS_PATH)
+        self.playlists = glob.glob('*.json')
+        
+        for i in range(len(self.playlists)):
+            self.file_data = open(self.playlists[i])# Open File
+            try:
+                self.data = json.load(self.file_data)# Get Json Data
+            except: 
+                Logger.exception('Cant load ', self.playlists[i])
+                continue
+            
+            if self.data['type']=='local': 
+                self.playlist = PlaylistButton(self.data['title'],#Insert in Button
+                                              self.data['description'],
+                                              self.data['tracks'])
+                if os.path.isfile(self.data['thumb']): 
+                    self.playlist.set_thumb(self.data['thumb'])
+                self.playlist.callback = self._call
+                self.playlistgrid.add_widget(self.playlist)
+            
+            elif self.data['type']=='yt':
+                 try: 
+                     self.ppl = pafy.get_playlist(self.data['link'])# Get YT Playlist
+                 except: 
+                     Logger.exception('Cant load ', self.playlists[i])
+                     continue
+                 
+                 self.tracks = []                 
+                 for item in self.ppl['items']:# Get Tracks
+                     self.tracks.append({'title':item['pafy'].title, 'link':item['pafy'].videoid})
+                 
+                 self.playlist = PlaylistButton(self.data['title'],#instance of button
+                                                self.data['description'],
+                                                self.tracks)
+                 
+                 if os.path.isfile(self.data['thumb']):
+                     self.playlist.set_thumb(self.data['thumb']) # Put the thubnail
                  self.playlist.callback = self._call
-                 self.playlistgrid.add_widget(self.playlist)
-             
-             elif self.data['type']=='yt':
-                  self.ppl = pafy.get_playlist(self.data['link'])# Get YT Playlist
-                  self.tracks = []                 
-                  for item in self.ppl['items']:# Get Tracks
-                      self.tracks.append({'title':item['pafy'].title, 'link':item['pafy'].videoid})
-                  
-                  self.playlist = PlaylistButton(self.data['title'],#instance of button
-                                                 self.data['description'],
-                                                 self.tracks)
-                  
-                  if os.path.isfile(self.data['thumb']):
-                      self.playlist.set_thumb(self.data['thumb']) # Put the thubnail
-                  self.playlist.callback = self._call
-                  self.playlistgrid.add_widget(self.playlist)                 
-                 
-                 
-         os.chdir(scriptfolder)
-         
-     def _call(self, videos):
-         if self.call: self.call(videos)
-     
-     def add_playlist(self, vl):
-         self.popup_addplaylist.open()
-     def add_playlistYT(self, vl):
-         self.popup_addplaylistYT.open()
-     def update_rect(instance, value, a):
-         instance.rect.pos = instance.pos
-         instance.rect.size = instance.size
+                 self.playlistgrid.add_widget(self.playlist)                 
+                
+        os.chdir(scriptfolder)
+        
+    def _call(self, videos):
+        if self.call: self.call(videos)
+        __main__.app.main.sm.current = 'music'
+    def add_playlist(self, vl):
+        AddPlaylistPopup().open()
+    
+    def add_playlistYT(self, vl):
+        AddPlaylistFromYTPopup().open()

@@ -23,12 +23,12 @@ def yts(query):
     '''Search youtube videos and return the title, url, channel, 
        thumbnail and duration of video'''
     query = query.replace(' ', '+')
-    webdata = requests.get('http://www.youtube.com/results?q='+query+'&sp=EgIQAVAU', verify='cacert.pem').text
+    webdata = requests.get('http://www.youtube.com/results?q='+query+'&sp=EgIQAVAU', verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     VideoList = []
     for link in soupdata.findAll(attrs={'class':'yt-lockup-tile'}):
         # Get info from HTML tags
-        if link.find('a').get('href')[0:36] == 'https://googleads.g.doubleclick.net/':continue
+        if link.find('a').get('href')[0:36] == 'https://googleads.g.doubleclick.net/': continue
         videolink = 'https://www.youtube.com' + link.find('a').get('href')
         videotitle = link.find(attrs={'class':'yt-lockup-title'}).find('a').get('title')
         try:
@@ -45,11 +45,26 @@ def yts(query):
                          'duration': videoduration, 'channelname': channelname, 
                          'channelurl': channelurl, 'thumbnail': thumbnailurl})
     return VideoList
-    
+
+def ytspl(query):
+    query = query.replace(' ', '+')
+    webdata = requests.get('https://www.youtube.com/results?sp=EgIQA1AU&q='+query, verify=False).text
+    soupdata = BeautifulSoup(webdata, PARSER)
+    playlists = []
+    for link in soupdata.findAll(attrs={'class':'yt-lockup-tile'}):
+        playlisttitle = link.find('h3').find('a').get('title')
+        try:playlistlink = 'https://www.youtube.com/playlist?'+link.find('h3').find('a').get('href').split('&')[1]
+        except:continue
+        try:numtracks = link.find(attrs={'class':'sidebar'}).text.split(' ')[0]
+        except:numtracks='--'
+        pl = {"title":playlisttitle, "link":playlistlink, "numtracks":numtracks}
+        playlists.append(pl)
+    return playlists
+   
 def ytsArtist(query):
     ''' Get the most famous music of artist from yotube if not found returns VideoList = []'''
     query = query.replace(' ', '+')
-    webdata = requests.get("http://www.youtube.com/results?search_query=" + query, verify='cacert.pem').text
+    webdata = requests.get("http://www.youtube.com/results?search_query=" + query, verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     VideoList = []
     try:
@@ -65,7 +80,7 @@ def ytsArtist(query):
 def getyttop():
     ''' Get the top 100 music on youtube '''
     playlisturl = "http://www.youtube.com/playlist?list=PLFgquLnL59alcyTM2lkWJU34KtfPXQDaX"
-    webdata = requests.get(playlisturl, verify='cacert.pem').text
+    webdata = requests.get(playlisturl, verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     VideoList = []
     for link in soupdata.findAll(attrs={'class':'pl-video'}):
@@ -82,7 +97,7 @@ def artistSearch(query,limit=5):
     ''' Search artists in discogs.com and return name, 
         image url and url of artist '''
     query = query.replace(' ', '+')
-    webdata = requests.get("http://www.discogs.com/search/?q=" + query + "&type=artist", verify='cacert.pem').text
+    webdata = requests.get("http://www.discogs.com/search/?q=" + query + "&type=artist", verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     artists = []
     countlimit = 0
@@ -99,7 +114,7 @@ def artistSearch(query,limit=5):
 def getAlbunsFromArtist(artisturl): 
     ''' Set the artist url from discogs and return 
         the master albuns from artist '''
-    webdata = requests.get(artisturl, verify='cacert.pem').text
+    webdata = requests.get(artisturl, verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     albuns = []
     # Filter tags with have the class = card and master
@@ -124,7 +139,7 @@ def getAlbunsFromArtist(artisturl):
 def getTracksFromAlbum(albumurl): 
     ''' Set the album url from discogs and return 
         the complete info from album '''
-    webdata = requests.get(albumurl, verify='cacert.pem').text
+    webdata = requests.get(albumurl, verify=False).text
     soupdata = BeautifulSoup(webdata, PARSER)
     tracks = []
     # Filter tag with have the class = playlist and after find tags that have class = tackslist_track
