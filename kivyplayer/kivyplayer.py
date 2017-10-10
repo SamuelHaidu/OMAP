@@ -8,8 +8,6 @@ from kivy.uix.slider import Slider
 from kivy.app import App
 from custombutton import PlayButton, NextButton, PrevButton, RepeatButton, SoundButton
 from android_backend import MPlayer
-#from vlc_backend import MPlayer
-#from kivy_backend import MPlayer
 
 class SliderHack(Factory.Slider):
     '''This class create a slider with a touch events '''
@@ -42,7 +40,7 @@ class Player(BoxLayout):
         
         self.titlelayout = BoxLayout(orientation='horizontal')
         self.titlelayout.size_hint_y = None
-        self.titlelayout.height = 16
+        self.titlelayout.height = 42
         
         self.uplayout = BoxLayout(orientation='horizontal')
         self.uplayout.size_hint_y = None
@@ -58,32 +56,37 @@ class Player(BoxLayout):
         self.pausetime = 0
         self.pausestate = False
         
-        self.timer = Clock
-        self.timer.schedule_interval(self._progresstimer, 0.1) # Update the slider and labels
+        # Update the slider and labels
+        Clock.schedule_interval(self._progresstimer, 0.1) 
         
         self.add_widget(self.titlelayout)
         self.add_widget(self.uplayout)
         self.add_widget(self.downlayout)
         
-        self.label_title = Label(text='No Music')
+        self.label_title = Label(text='No Music', multiline=True, halign='center')
+        self.label_title.bind(size=self.label_title.setter('text_size'))
         self.titlelayout.add_widget(self.label_title)
         
         # Slider and labels
         self.label_time = Label(text='00:00')
-        self.label_time.size_hint = (0.15, 1)
+        self.label_time.size_hint = (None, 1)
+        self.label_time.width = '41dp'
         self.uplayout.add_widget(self.label_time)
         
         self.slid_timemusic = SliderHack()
         self.slid_timemusic.orientation = 'horizontal'
         self.slid_timemusic.callback_up = self._sliderup
         self.slid_timemusic.value_track = True
+        self.slid_timemusic.background_width = '16dp'
+        self.slid_timemusic.value_track_width = '2dp'
         self.slid_timemusic.value_track_color = [0, 0.7, 2, 1]
         self.slid_timemusic.cursor_size = (16, 16)
         self.slid_timemusic.min = 0
         self.uplayout.add_widget(self.slid_timemusic)
         
         self.label_length = Label(text='00:00')
-        self.label_length.size_hint= (0.15, 1)
+        self.label_length.size_hint= (None, 1)
+        self.label_length.width = '41dp'
         self.uplayout.add_widget(self.label_length)
         
         # Buttons
