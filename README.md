@@ -4,7 +4,7 @@ OMAP is a simple music search and downloader and streaming for android. All code
 ##### Downloads:
   - [Android APK](http://openmusicapp.blogspot.com.br/p/download.html)
   
-##### Shold improve
+##### Should improve
   - Search Options
   - Background play, android service and notifications 
 
